@@ -1,4 +1,4 @@
-# NotchHub macOS
+# NotchHub macOS ✨
 
 <p align="center">
   <img src="docs/screenshots/notch-idle.png" alt="NotchHub 在闲置刘海中显示 Codex 周额度与内存" width="900">
@@ -10,13 +10,13 @@
   <img src="https://img.shields.io/badge/Swift-SwiftUI-F05138?logo=swift&logoColor=white" alt="SwiftUI">
 </p>
 
-NotchHub macOS 是一个面向中文 macOS 用户的刘海信息中心。它基于开源项目 [TheBoredTeam/boring.notch](https://github.com/TheBoredTeam/boring.notch) 二次开发：保留原项目的音乐控制、文件架、系统 HUD 等能力，并新增 Codex 额度与 Token 统计、QQ 音乐同步歌词、低占用硬件监控、每日预算预警和全局快捷工具。
+把 MacBook 刘海变成一个真正有用的信息中心：不听歌时看 Codex 额度和内存，播放 QQ 音乐时看同步歌词，需要细节时再打开中文硬件面板。
 
-> 本仓库目前只发布源代码，不提供未经签名或公证的安装包。应用名称与部分工程标识仍沿用上游，以减少合并和构建成本；NotchHub macOS 是本分支的仓库名称，并非上游官方版本。
+这个项目的灵感和基础来自 [TheBoredTeam/boring.notch](https://github.com/TheBoredTeam/boring.notch)，在它优秀的刘海交互上加入了我日常真正需要的 Codex、歌词、硬件监控和快捷工具。
 
-## 界面预览
+## 📸 界面
 
-下图均来自实际运行界面。为保护隐私，账号标识、额度、Token 数量和时间已替换为示例数据，界面结构与功能状态保持不变。
+截图来自实际运行界面，其中账号和额度数字已换成示例数据。
 
 <p align="center">
   <img src="docs/screenshots/codex-dashboard.png" alt="Codex 每日预算和额度窗口" width="360">
@@ -24,90 +24,99 @@ NotchHub macOS 是一个面向中文 macOS 用户的刘海信息中心。它基�
   <img src="docs/screenshots/dashboard-layout-editor.png" alt="硬件面板模块布局编辑" width="360">
 </p>
 
-## 相比上游增加了什么
+## 🌟 功能
 
-| 方向 | 上游 boring.notch | NotchHub macOS 新增能力 |
-| --- | --- | --- |
-| 刘海闲置状态 | 以媒体与系统活动为主 | 持续显示 Codex 主额度与系统内存占用 |
-| 音乐播放 | 标题、封面、控制与可视化 | QQ 音乐优先的同步歌词；无歌词时回退到歌曲标题 |
-| Codex 额度 | 无 | 自动识别 Plus / Pro；Plus 强调 5 小时额度，Pro 强调周额度 |
-| Token 统计 | 无 | 本机每日输入、缓存输入、输出和推理 Token 去重统计，统一使用“亿” |
-| 预算管理 | 无 | 按剩余周额度动态分配每日预算，达到 100% 和 150% 时各通知一次 |
-| 重置监测 | 无 | 每小时检查 Tibo 公开硬重置信号，并与本地额度变化交叉确认 |
-| 硬件信息 | 无独立常驻面板 | 中文桌面面板展示 CPU、GPU、内存、磁盘、网络、电池、温度与运行时间 |
-| 布局 | 固定为主 | 面板可缩放，六个模块可隐藏、拖动排序并持久保存 |
-| 快捷工具 | 原有刘海快捷操作 | 全局快捷键打开 macOS 应用启动台和系统截图工具 |
-| 资源占用 | 通用刷新策略 | 2 / 5 / 15 秒自适应采样；低电量、温控、锁屏或屏幕休眠时降频/暂停 |
+### 🤖 Codex 额度常驻刘海
 
-## 核心功能
+- 没有播放音乐时，闭合刘海持续显示 Codex 主额度和当前内存占用。
+- 自动识别 Plus、Pro 和 Pro Lite：Plus 优先显示 5 小时额度，Pro 系列优先显示周额度。
+- 展开后可以看到全部额度窗口、剩余比例、重置倒计时和最近更新时间。
+- 支持紧凑、标准、信息增强三种中文布局。
+- 鼠标移出详情页后会自动收起，不会再卡在屏幕固定位置。
 
-### 1. 刘海中的 Codex 状态
+### 🔮 Tibo 重置雷达
 
-- 不播放音乐时，闭合刘海持续显示 Codex 额度和内存占用。
-- 自动读取本地已登录的 `codex app-server`，不读取或复制登录 Token。
-- Plus 用户优先显示 5 小时窗口；Pro / Pro Lite 用户优先显示周窗口。
-- 详情页同时列出所有可用额度窗口、重置时间、预计剩余额度和置信度。
-- 提供紧凑、标准、信息增强三种中文布局。
-- 修复详情页展开后悬停状态丢失、鼠标移开仍无法收起的问题。
+Tibo 偶尔会进行服务器端硬重置。NotchHub 会每小时查看一次公开事件，同时在启动和 Mac 唤醒后补查：
 
-### 2. 每日 Token 与周预算
+- 发现 `RESET_PLANNED` 时，在硬件面板展示“可能发生硬重置”、事件标题、发布时间和来源链接，方便判断大概会在什么时候重置。
+- 只处理真正的硬重置，自动排除 banked reset / 储备重置。
+- 发现可信的 `RESET_COMPLETED` 后发送一次通知，并进入“等待额度同步”状态。
+- 当 Codex 剩余额度回升至少 20%，或额度窗口的重置时间发生变化时，确认重置已经同步。
+- 同步完成后自动清空旧预算状态，重新计算当日可用额度。
+- 接口暂时失败时会保留最后一次成功结果，并按 5 分钟、15 分钟、1 小时逐步退避重试。
 
-- 增量扫描 `~/.codex/sessions` 和 `~/.codex/archived_sessions`，只读取新增 JSONL 内容。
-- 按事件去重，分别统计输入、缓存输入、输出与推理 Token。
-- 所有 Token 数量在自定义界面中使用“亿”为单位。
-- 使用同一额度窗口最近 12 个兼容样本的中位数估算剩余额度，并显示估算区间、样本数和中文置信度。
-- 每日预算在本地午夜锁定；未用额度滚入后续日期，新额度周期会立即重建预算。
-- 仅在达到当日预算 100% 和 150% 时通知，避免频繁打扰。
+面板会把“计划中、已宣布、等待同步、已同步”分开显示。这样既能提前看到可能的重置窗口，也能知道额度是否真的到账。
 
-### 3. QQ 音乐同步歌词
+### 📊 Token 统计与额度预估
 
-- 播放音乐时，歌词优先于 Codex 与硬件状态显示。
+- 增量读取本机 `~/.codex/sessions` 和 `~/.codex/archived_sessions`，首次扫描后只处理新增 JSONL 数据。
+- 对事件去重，分别统计输入、缓存输入、输出和推理 Token。
+- 所有 Token 数量统一使用“亿”，更适合查看大额度。
+- 保存 30 天额度样本，用最近 12 个兼容样本的中位数估算每 1% 对应的 Token。
+- 显示预计剩余额度、估算区间、样本数和中文置信度。
+- 根据消耗速度估算额度会不会在重置前用完，并给出预计耗尽时间。
+- 其他设备产生、但本机日志里找不到的消耗会单独标记为“未归因估算”，不会混进本机精确统计。
+
+### 🎯 每日额度预算
+
+- 根据周剩余额度和距离重置的时间，自动分配每天可用的 Token。
+- 每日预算在本地午夜锁定，白天不会因为短时波动反复改变。
+- 当日没用完的空间会进入下一天的重新分配。
+- 新额度周期或 Tibo 硬重置同步后会立即重建预算。
+- 只在用量达到当日预算的 100% 和 150% 时各提醒一次，没有多余通知。
+
+### 🎵 QQ 音乐同步歌词
+
+- 播放音乐时，歌词优先显示在灵动岛，暂停后恢复 Codex 额度与内存。
 - 优先适配 QQ 音乐，通过 macOS Now Playing / MediaRemote 获取当前歌曲。
-- 尝试匹配同步歌词；找不到时回退为歌曲标题，不让刘海空白。
-- 切歌时取消过期请求并缓存已验证结果，降低网络与 CPU 开销。
+- 使用严格的歌曲匹配查找同步歌词；没有匹配结果时显示歌曲标题。
+- 切歌会取消上一首的过期请求，已经验证的歌词保存在本地缓存中。
+- 专辑封面、播放控制和可视化效果继续保留。
 
-### 4. 中文硬件桌面面板
+### 🖥️ 中文硬件桌面面板
 
-- 展示处理器占用与系统负载、GPU、内存压力、压缩内存和 Swap。
-- 展示磁盘余量、实时上下行网络速率、电池健康、循环次数、温度状态和运行时间。
-- 面板默认采用紧凑尺寸，可从边缘自由调整大小并纵向滚动。
-- 历史趋势支持额度、硬件和 Token 三种视图。
-- 六个内容模块可开关、拖动排序，顺序和可见性会跨启动保存。
-- 数据源失败时保留最后一次成功值，显示过期状态，并采用有上限的退避重试。
+- CPU 占用、核心数与系统负载。
+- GPU 型号、内存占用、内存压力、压缩内存和 Swap。
+- 磁盘剩余空间、实时下载与上传速度。
+- 电池电量、健康度、循环次数、温度状态与系统运行时间。
+- 额度、硬件和 Token 三种历史趋势图。
+- 面板可以常驻桌面、自由缩放和纵向滚动。
+- 六个模块可以显示或隐藏，也可以拖动排序；布局会自动保存。
+- 数据源出错时显示最后成功值和过期状态，不会让整个面板突然空白。
 
-### 5. 快捷工具
+### ⌨️ 两个实用快捷键
 
-- `⌃⌥A`：打开 macOS 应用启动台，显示所有已安装应用图标。
+- `⌃⌥A`：打开 macOS 应用启动台，快速找到所有已安装应用。
 - `⌃⌥S`：打开系统截图与录屏工具栏。
-- 快捷键可在应用设置中修改。
+- 两个快捷键都可以在设置中修改。
 
-## 数据来源与隐私
+### 🧰 其他功能
 
-NotchHub 的主要统计都在本机完成：
+- 刘海音乐控制、专辑封面、进度条和动态可视化。
+- 文件暂存架、拖放和 AirDrop 分享。
+- 系统音量、亮度和键盘背光 HUD。
+- 日历、提醒事项和充电状态 Live Activity。
+- 摄像头镜子、手势操作、多显示器和刘海尺寸微调。
+- 菜单栏设置、登录启动和 Sparkle 更新检查。
 
-- Codex 额度通过本机已认证的 `codex app-server` 只读接口获取。
-- Token 统计只读取本机 Codex 会话日志，不上传日志内容。
-- 内存与硬件状态来自 macOS 系统接口，不需要管理员权限。
-- QQ 音乐曲目信息来自 macOS Now Playing；同步歌词匹配可能访问 LRCLIB。
-- Tibo 硬重置信号来自 `tibo.modelyard.dev` 的公开结构化信息。
+### 🍃 尽量少占资源
 
-应用不会把 Codex 登录凭证、会话正文、个人额度历史或硬件历史提交到本仓库。更完整的边界说明见 [PRIVACY.md](PRIVACY.md)。
+- Codex 额度与 Token 增量统计每 10 分钟刷新一次，打开刘海或面板时按需刷新。
+- 内存摘要每 10 秒更新。
+- 硬件面板可见时通常每 5 秒采样，短时间需要更顺滑时可提升到 2 秒。
+- 面板隐藏、被遮挡、低电量或温控受限时降到 15 秒。
+- 屏幕关闭或用户会话锁定时暂停硬件采样。
 
-## 刷新频率与资源控制
+## 🚀 构建与运行
 
-- Codex 额度与本机 Token 增量统计：后台每 10 分钟；打开刘海或面板时按需刷新过期数据。
-- 内存摘要：每 10 秒。
-- 硬件详情：可见时通常每 5 秒；低电量、温控受限、隐藏或被遮挡时降至 15 秒；屏幕关闭或会话锁定时暂停。
-- Tibo 硬重置检查：每小时一次，并在启动和唤醒后补查。
+### 环境
 
-## 系统要求
+- macOS 14 Sonoma 或更高版本
+- Apple Silicon 或 Intel Mac
+- 完整版 Xcode，建议 Xcode 26 或更高版本
+- 使用 Codex 功能前，需要本机 Codex 已登录且 `codex app-server` 可用
 
-- macOS 14 Sonoma 或更高版本。
-- Apple Silicon 或 Intel Mac。
-- 构建需要完整 Xcode；当前工程建议使用 Xcode 26 或更高版本。
-- 使用 Codex 状态功能前，需要本机 Codex 已登录且 `codex app-server` 可用。
-
-## 从源码构建
+### 克隆项目
 
 ```bash
 git clone https://github.com/huchongying/notch-hub-macos.git
@@ -115,7 +124,9 @@ cd notch-hub-macos
 open boringNotch.xcodeproj
 ```
 
-在 Xcode 中选择 `boringNotch` Scheme，按 `⌘R` 运行。也可以在终端执行无签名验证构建：
+在 Xcode 中选择 `boringNotch` Scheme，按 `⌘R` 运行。
+
+也可以在终端做一次无签名 Release 构建：
 
 ```bash
 xcodebuild \
@@ -127,42 +138,29 @@ xcodebuild \
   build
 ```
 
-若要安装到“应用程序”，请先使用自己的开发者签名在 Xcode 中构建，再将生成的 `boringNotch.app` 复制到 `/Applications`。不要从陌生来源运行未经签名的二进制文件。
+## 🔐 权限与数据
 
-## 权限说明
+- **辅助功能**：全局快捷键、媒体按键与部分系统交互。
+- **通知**：每日预算达到 100% / 150%，以及确认后的 Tibo 硬重置提醒。
+- **网络**：同步歌词、Tibo 状态和版本更新。
+- **日历、提醒事项、相机**：用于原项目中对应的日历、提醒和镜子功能。
 
-不同功能可能请求以下 macOS 权限：
+Codex 额度来自本机已认证的 `codex app-server` 只读接口；Token 统计在本机完成。应用不会读取 Codex 登录 Token，也不会上传会话正文。完整说明见 [PRIVACY.md](PRIVACY.md)。
 
-- 辅助功能：全局快捷键、媒体按键与部分系统交互。
-- 通知：每日预算 100% / 150% 和确认后的硬重置提醒。
-- 日历、提醒事项、相机：仅用于上游原有的对应功能，可不授权。
-- 网络：同步歌词、更新检查与 Tibo 公开状态检查。
+## 🧩 主要代码
 
-未授权某项权限时，只影响对应功能，不应阻止基础刘海和本地硬件监控运行。
-
-## 主要代码位置
-
-- `boringNotch/models/ResourceStatsViewModel.swift`：Codex 额度、预算、估算与 Tibo 状态。
-- `boringNotch/models/CodexTokenStatsViewModel.swift`：本机 Token 增量与去重统计。
-- `boringNotch/models/HardwareStatsViewModel.swift`：硬件采样与自适应刷新。
+- `boringNotch/models/ResourceStatsViewModel.swift`：Codex 额度、预估、每日预算和 Tibo 重置雷达。
+- `boringNotch/models/CodexTokenStatsViewModel.swift`：本机 Token 增量统计与去重。
+- `boringNotch/models/HardwareStatsViewModel.swift`：硬件采样和自适应刷新。
 - `boringNotch/components/Hardware/HardwareDashboard.swift`：中文桌面面板与模块布局。
-- `boringNotch/components/Notch/BoringHeader.swift`：刘海状态、详情和歌词优先级。
-- `boringNotch/managers/MusicManager.swift`：QQ 音乐元数据和同步歌词。
-- `BoringNotchXPCHelper/CodexRateLimitProbe.swift`：Codex 本地只读额度探测。
+- `boringNotch/components/Notch/BoringHeader.swift`：刘海额度、内存、详情页和歌词显示。
+- `boringNotch/managers/MusicManager.swift`：QQ 音乐元数据与同步歌词。
+- `BoringNotchXPCHelper/CodexRateLimitProbe.swift`：Codex 本地额度读取。
 
-## 已知边界
-
-- 本机 Token 统计不包含其他设备产生的精确用量；这部分只能根据额度变化估算，并明确标为未归因估算。
-- Codex 服务返回结构变化时，额度探测可能暂时不可用；界面会保留最后成功值并标记过期。
-- 同步歌词取决于曲目元数据匹配和可用歌词源，并非所有歌曲都能匹配。
-- Tibo 信息只作为候选信号；预算重算仍以本地观察到的额度窗口变化为准。
-
-## 上游、致谢与许可证
-
-本项目直接基于 [TheBoredTeam/boring.notch](https://github.com/TheBoredTeam/boring.notch) 开发，保留其版权、第三方依赖声明和 GPL-3.0 许可证。特别感谢上游维护者，以及以下项目：
+## 🙌 感谢
 
 - [MediaRemoteAdapter](https://github.com/ungive/mediaremote-adapter)：macOS Now Playing 元数据适配。
-- [NotchDrop](https://github.com/Lakr233/NotchDrop)：上游文件架功能的重要参考。
-- [Codex Usage Bar](https://github.com/CMMUU/codex-usage-bar)：Codex 进程握手和可执行文件发现逻辑参考，遵循其 MIT 许可证。
+- [NotchDrop](https://github.com/Lakr233/NotchDrop)：文件架功能参考。
+- [Codex Usage Bar](https://github.com/CMMUU/codex-usage-bar)：Codex 进程握手与可执行文件发现逻辑参考。
 
-完整声明见 [LICENSE](LICENSE) 与 [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES)。提交改动前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 和 [SECURITY.md](SECURITY.md)。
+项目使用 [GPL-3.0](LICENSE) 许可证，第三方声明见 [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES)。
